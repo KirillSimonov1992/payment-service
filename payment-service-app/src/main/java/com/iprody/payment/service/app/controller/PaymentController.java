@@ -1,38 +1,31 @@
 package com.iprody.payment.service.app.controller;
 
-import com.iprody.payment.service.app.model.Payment;
-import jakarta.annotation.PostConstruct;
+import com.iprody.payment.service.app.persistence.entity.Payment;
+import com.iprody.payment.service.app.persistency.PaymentRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/payments")
 public class PaymentController {
 
-    private final Map<Long, Payment> payments = new HashMap<>(5);
+    @Autowired
+    private PaymentRepository paymentRepository;
 
-    @PostConstruct
-    void init() {
-        payments.put(1L, new Payment(1L, 1.0));
-        payments.put(2L, new Payment(2L, 2.0));
-        payments.put(3L, new Payment(3L, 3.0));
-        payments.put(4L, new Payment(4L, 4.0));
-        payments.put(5L, new Payment(5L, 5.0));
-    }
-
-    @GetMapping("/{id}")
-    public Payment getPayment(@PathVariable Long id) {
-        return payments.get(id);
+    @GetMapping("/{guid}")
+    public Payment getPayment(@PathVariable UUID guid) {
+        return paymentRepository.findById(guid).orElseThrow();
     }
 
     @GetMapping
-    public Map<Long, Payment> getPayments() {
-        return payments;
+    public List<Payment> getPayments() {
+        return paymentRepository.findAll();
     }
 
 }

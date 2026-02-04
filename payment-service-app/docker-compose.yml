@@ -5,3 +5,34 @@ services:
     image: payment-service-app
     ports:
       - "8080:8080"
+
+  # База данных
+  postgres:
+    image: postgres:16
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: admin        # имя пользователя
+      POSTGRES_PASSWORD: secret   # пароль
+      POSTGRES_DB: payment-db     # имя БД по умолчанию
+      LC_MESSAGES: en_US.UTF-8    # язык ошибок - английский
+    ports:
+      - "5432:5432"               # проброс порта
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@email.com  # учётка для входа
+      PGADMIN_DEFAULT_PASSWORD: admin         # пароль для входа
+    ports:
+      - "8081:80"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+volumes:
+  pgdata:
