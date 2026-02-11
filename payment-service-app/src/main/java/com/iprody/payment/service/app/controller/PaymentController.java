@@ -31,17 +31,12 @@ public class PaymentController {
         @RequestParam(defaultValue = "guid") String sortBy,
         @RequestParam(defaultValue = "desc") String direction
     ) {
-        switch (direction) {
-            case "desc":
-                Sort.by(sortBy).descending();
-                break;
-            case "asc":
-                Sort.by(sortBy).ascending();
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid direction");
-        }
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+        Sort sort = switch (direction) {
+            case "desc" -> Sort.by(sortBy).descending();
+            case "asc" -> Sort.by(sortBy).ascending();
+            default -> throw new IllegalArgumentException("Invalid direction");
+        };
+        Pageable pageable = PageRequest.of(page, size, sort);
         return paymentService.searchPaged(filter, pageable);
     }
 }
