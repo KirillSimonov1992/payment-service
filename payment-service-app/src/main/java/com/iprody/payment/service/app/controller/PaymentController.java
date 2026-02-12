@@ -1,8 +1,8 @@
 package com.iprody.payment.service.app.controller;
 
-import com.iprody.payment.service.app.persistence.entity.Payment;
+import com.iprody.payment.service.app.persistence.entity.PaymentDto;
 import com.iprody.payment.service.app.persistency.PaymentFilter;
-import com.iprody.payment.service.app.services.PaymentService;
+import com.iprody.payment.service.app.services.PaymentServiceImpl;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,14 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/payments")
 public class PaymentController {
 
-    private PaymentService paymentService;
+    private PaymentServiceImpl paymentServiceImpl;
 
-    public PaymentController(PaymentService paymentService) {
-        this.paymentService = paymentService;
+    public PaymentController(PaymentServiceImpl paymentServiceImpl) {
+        this.paymentServiceImpl = paymentServiceImpl;
     }
 
     @GetMapping("/search")
-    public Page<Payment> searchPayments(
+    public Page<PaymentDto> searchPayments(
         @ModelAttribute PaymentFilter filter,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "25") int size,
@@ -37,6 +37,6 @@ public class PaymentController {
             default -> throw new IllegalArgumentException("Invalid direction");
         };
         Pageable pageable = PageRequest.of(page, size, sort);
-        return paymentService.searchPaged(filter, pageable);
+        return paymentServiceImpl.search(filter, pageable);
     }
 }
