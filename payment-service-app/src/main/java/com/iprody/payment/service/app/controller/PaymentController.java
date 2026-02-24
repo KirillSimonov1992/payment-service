@@ -17,6 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/payments")
 public class PaymentController {
 
+    public static final String DEFAULT_SORT = "desc";
+    public static final String DEFAULT_SORT_FIELD = "guid";
+    public static final String DEFAULT_PAGE_SIZE = "25";
+    public static final String DEFAULT_NUMBER_PAGE = "0";
+
     private PaymentServiceImpl paymentServiceImpl;
 
     public PaymentController(PaymentServiceImpl paymentServiceImpl) {
@@ -26,10 +31,10 @@ public class PaymentController {
     @GetMapping("/search")
     public Page<PaymentDto> searchPayments(
         @ModelAttribute PaymentFilter filter,
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "25") int size,
-        @RequestParam(defaultValue = "guid") String sortBy,
-        @RequestParam(defaultValue = "desc") String direction
+        @RequestParam(defaultValue = DEFAULT_NUMBER_PAGE) int page,
+        @RequestParam(defaultValue = DEFAULT_PAGE_SIZE) int size,
+        @RequestParam(defaultValue = DEFAULT_SORT_FIELD) String sortBy,
+        @RequestParam(defaultValue = DEFAULT_SORT) String direction
     ) {
         Sort sort = switch (direction) {
             case "desc" -> Sort.by(sortBy).descending();
