@@ -2,12 +2,14 @@ package com.iprody.payment.service.app.service;
 
 import com.iprody.payment.service.app.mapper.PaymentMapper;
 import com.iprody.payment.service.app.persistence.entity.Payment;
-import com.iprody.payment.service.app.persistence.entity.PaymentDto;
+import com.iprody.payment.service.app.persistence.service.dto.CreatePaymentDto;
+import com.iprody.payment.service.app.persistence.service.dto.PaymentDto;
 import com.iprody.payment.service.app.persistence.entity.PaymentStatus;
 import com.iprody.payment.service.app.persistency.PaymentFilter;
 import com.iprody.payment.service.app.persistency.PaymentFilterFactory;
 import com.iprody.payment.service.app.persistency.PaymentRepository;
 import com.iprody.payment.service.app.services.PaymentServiceImpl;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,6 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
@@ -73,6 +76,7 @@ public class PaymentServiceTest {
         payment.setStatus(PaymentStatus.APPROVED);
         payment.setCreatedAt(Instant.now());
         payment.setUpdatedAt(Instant.now());
+        payment.setNote("note test");
 
         paymentDto = new PaymentDto();
         paymentDto.setGuid(payment.getGuid());
@@ -82,6 +86,8 @@ public class PaymentServiceTest {
         paymentDto.setStatus(payment.getStatus());
         paymentDto.setCreatedAt(payment.getCreatedAt());
         paymentDto.setUpdatedAt(payment.getUpdatedAt());
+        paymentDto.setUpdatedAt(payment.getUpdatedAt());
+        paymentDto.setNote(payment.getNote());
     }
 
     @ParameterizedTest
@@ -95,7 +101,7 @@ public class PaymentServiceTest {
         when(paymentMapper.toDto(payment)).thenReturn(paymentDto);
 
         // when
-        PaymentDto result = paymentService.get(guid);
+        PaymentDto result = paymentService.findById(guid);
 
         // then
         assertEquals(status, result.getStatus());
@@ -122,7 +128,7 @@ public class PaymentServiceTest {
         when(paymentMapper.toDto(payment)).thenReturn(paymentDto);
 
         // when
-        PaymentDto result = paymentService.get(payment.getGuid());
+        PaymentDto result = paymentService.findById(payment.getGuid());
 
         // then
         assertNotEquals(null, result);
@@ -363,5 +369,94 @@ public class PaymentServiceTest {
             assertEquals(25, results.getSize());
             assertEquals(defaultSort, results.getSort());
         }
+    }
+
+    @Test
+    void shouldReturnCreated() {
+        // given
+
+        CreatePaymentDto createPaymentDto = new CreatePaymentDto();
+        createPaymentDto.setInquiryRefId(payment.getInquiryRefId());
+        createPaymentDto.setAmount(payment.getAmount());
+        createPaymentDto.setCurrency(payment.getCurrency());
+        createPaymentDto.setTransactionRefId(payment.getTransactionRefId());
+        createPaymentDto.setStatus(payment.getStatus());
+        createPaymentDto.setNote(payment.getNote());
+
+        when(paymentMapper.fromCreateDto(createPaymentDto)).thenReturn(payment);
+        when(paymentMapper.toDto(payment)).thenReturn(paymentDto);
+        when(paymentRepository.save(payment)).thenReturn(payment);
+
+        // when
+        PaymentDto result = paymentService.create(createPaymentDto);
+
+        // then
+        assertNotNull(result);
+        assertNotNull(result.getGuid());
+        assertNotNull(result.getCreatedAt());
+        assertNotNull(result.getUpdatedAt());
+        assertEquals(createPaymentDto.getNote(), result.getNote());
+        assertEquals(createPaymentDto.getCurrency(), result.getCurrency());
+        assertEquals(createPaymentDto.getInquiryRefId(), result.getInquiryRefId());
+        assertEquals(createPaymentDto.getTransactionRefId(), result.getTransactionRefId());
+        assertEquals(createPaymentDto.getStatus(), result.getStatus());
+    }
+
+    @Test
+    void shouldReturnUpdated() {
+        // given
+        final Instant date = Instant.parse("2026-02-27T10:00:00Z");
+        final UUID guid = payment.getGuid();
+
+        PaymentDto dtoForUpdate = new PaymentDto();
+        dtoForUpdate.setGuid(guid);
+        dtoForUpdate.setInquiryRefId(guid);
+        dtoForUpdate.setAmount(payment.getAmount());
+        dtoForUpdate.setCurrency(payment.getCurrency());
+        dtoForUpdate.setTransactionRefId(payment.getTransactionRefId());
+        dtoForUpdate.setStatus(payment.getStatus());
+        dtoForUpdate.setNote(payment.getNote());
+        dtoForUpdate.setCreatedAt(date);
+        dtoForUpdate.setUpdatedAt(date);
+
+        when(paymentMapper.toEntity(dtoForUpdate)).thenReturn(payment);
+        when(paymentMapper.toDto(payment)).thenReturn(dtoForUpdate);
+        when(paymentRepository.save(payment)).thenReturn(payment);
+        when(paymentRepository.existsById(guid)).thenReturn(true);
+
+        // when
+        PaymentDto result = paymentService.update(guid, dtoForUpdate);
+
+        // then
+        assertNotNull(result);
+        assertNotNull(result.getGuid());
+        assertNotNull(result.getCreatedAt());
+        assertNotNull(result.getUpdatedAt());
+        assertEquals(dtoForUpdate.getNote(), result.getNote());
+        assertEquals(dtoForUpdate.getCurrency(), result.getCurrency());
+        assertEquals(dtoForUpdate.getInquiryRefId(), result.getInquiryRefId());
+        assertEquals(dtoForUpdate.getTransactionRefId(), result.getTransactionRefId());
+        assertEquals(dtoForUpdate.getStatus(), result.getStatus());
+    }
+
+    @Test
+    void shouldReturnUpdateEntityNotFound() {
+        // given
+        final UUID notExistsGuid = UUID.randomUUID();
+
+        PaymentDto dtoForUpdate = new PaymentDto();
+
+        when(paymentRepository.existsById(notExistsGuid)).thenReturn(false);
+
+        // when
+        EntityNotFoundException thrown = assertThrows(
+                EntityNotFoundException.class,
+                () -> {
+                    paymentService.update(notExistsGuid, dtoForUpdate);
+                }
+        );
+
+        // then
+        assertEquals("Платеж не найден: " + notExistsGuid, thrown.getMessage());
     }
 }

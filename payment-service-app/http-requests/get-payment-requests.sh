@@ -1,0 +1,1 @@
+curl -v -X GET http://localhost:8080/payments/ac328a1a-1e60-4dd3-bee5-ed573d74c841
