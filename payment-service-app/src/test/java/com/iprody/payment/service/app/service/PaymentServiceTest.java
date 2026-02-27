@@ -36,8 +36,10 @@ import java.util.UUID;
 import static com.iprody.payment.service.app.controller.PaymentController.DEFAULT_NUMBER_PAGE;
 import static com.iprody.payment.service.app.controller.PaymentController.DEFAULT_PAGE_SIZE;
 import static com.iprody.payment.service.app.controller.PaymentController.DEFAULT_SORT_FIELD;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
@@ -123,8 +125,13 @@ public class PaymentServiceTest {
         PaymentDto result = paymentService.get(payment.getGuid());
 
         // then
-        assertThat(result).isNotNull();
-        assertEquals(result.getGuid(), payment.getGuid());
+        assertNotEquals(null, result);
+        assertEquals(payment.getGuid(), result.getGuid());
+        assertEquals(payment.getCurrency(), result.getCurrency());
+        assertEquals(payment.getAmount(), result.getAmount());
+        assertEquals(payment.getCreatedAt(), result.getCreatedAt());
+        assertEquals(payment.getUpdatedAt(), result.getUpdatedAt());
+        assertEquals(payment.getTransactionRefId(), result.getTransactionRefId());
     }
 
     @Test
@@ -141,9 +148,8 @@ public class PaymentServiceTest {
 
         try (MockedStatic mocked = mockStatic(PaymentFilterFactory.class)) {
 
-            mocked.when(
-                    (MockedStatic.Verification) PaymentFilterFactory.fromFilter(filter)
-            ).thenReturn(spec);
+            mocked.when(() -> PaymentFilterFactory.fromFilter(filter)).thenReturn(spec);
+
             when(paymentRepository.findAll(spec, pageableRequest)).thenReturn(pageDtoResponse);
             when(paymentMapper.toDto(payment)).thenReturn(paymentDto);
 
@@ -151,8 +157,8 @@ public class PaymentServiceTest {
             Page<PaymentDto> results = paymentService.search(filter, pageableRequest);
 
             // then
-            assertThat(results).isNotNull();
-            assertThat(results).isNotEmpty();
+            assertNotEquals(null, results);
+            assertNotEquals(null, results);
             assertEquals(1, results.getContent().size());
             PaymentDto dtoFromResults = results.getContent().getFirst();
             assertEquals(dtoFromResults.getCurrency(), payment.getCurrency());
@@ -173,9 +179,8 @@ public class PaymentServiceTest {
 
         try (MockedStatic mocked = mockStatic(PaymentFilterFactory.class)) {
 
-            mocked.when(
-                    (MockedStatic.Verification) PaymentFilterFactory.fromFilter(filter)
-            ).thenReturn(spec);
+            mocked.when(() -> PaymentFilterFactory.fromFilter(filter)).thenReturn(spec);
+
             when(paymentRepository.findAll(spec, pageableRequest)).thenReturn(pageDtoResponse);
             when(paymentMapper.toDto(payment)).thenReturn(paymentDto);
 
@@ -183,8 +188,8 @@ public class PaymentServiceTest {
             Page<PaymentDto> results = paymentService.search(filter, pageableRequest);
 
             // then
-            assertThat(results).isNotNull();
-            assertThat(results).isNotEmpty();
+            assertNotEquals(null, results);
+            assertFalse(results.getContent().isEmpty());
             assertEquals(1, results.getContent().size());
             PaymentDto dtoFromResults = results.getContent().getFirst();
             assertTrue(dtoFromResults.getAmount().compareTo(filter.getMinAmount()) > 0, "Значение должно быть больше");
@@ -195,7 +200,8 @@ public class PaymentServiceTest {
     void shouldReturnPaymentDtoByMaxAmount() {
         // given
         PaymentFilter filter = new PaymentFilter();
-        filter.setMinAmount(payment.getAmount().add(new BigDecimal(100)));
+        BigDecimal max = payment.getAmount().add(new BigDecimal(100));
+        filter.setMaxAmount(max);
         Specification<Payment> spec = PaymentFilterFactory.fromFilter(filter);
 
         Pageable pageableRequest = PageRequest.of(0, 10);
@@ -205,9 +211,8 @@ public class PaymentServiceTest {
 
         try (MockedStatic mocked = mockStatic(PaymentFilterFactory.class)) {
 
-            mocked.when(
-                    (MockedStatic.Verification) PaymentFilterFactory.fromFilter(filter)
-            ).thenReturn(spec);
+            mocked.when(() -> PaymentFilterFactory.fromFilter(filter)).thenReturn(spec);
+
             when(paymentRepository.findAll(spec, pageableRequest)).thenReturn(pageDtoResponse);
             when(paymentMapper.toDto(payment)).thenReturn(paymentDto);
 
@@ -215,11 +220,12 @@ public class PaymentServiceTest {
             Page<PaymentDto> results = paymentService.search(filter, pageableRequest);
 
             // then
-            assertThat(results).isNotNull();
-            assertThat(results).isNotEmpty();
+            assertNotNull(results);
+            assertFalse(results.getContent().isEmpty());
             assertEquals(1, results.getContent().size());
+
             PaymentDto dtoFromResults = results.getContent().getFirst();
-            assertTrue(dtoFromResults.getAmount().compareTo(filter.getMinAmount()) < 0);
+            assertTrue(dtoFromResults.getAmount().compareTo(filter.getMaxAmount()) < 0);
         }
     }
 
@@ -237,9 +243,8 @@ public class PaymentServiceTest {
 
         try (MockedStatic mocked = mockStatic(PaymentFilterFactory.class)) {
 
-            mocked.when(
-                    (MockedStatic.Verification) PaymentFilterFactory.fromFilter(filter)
-            ).thenReturn(spec);
+            mocked.when(() -> PaymentFilterFactory.fromFilter(filter)).thenReturn(spec);
+
             when(paymentRepository.findAll(spec, pageableRequest)).thenReturn(pageDtoResponse);
             when(paymentMapper.toDto(payment)).thenReturn(paymentDto);
 
@@ -247,8 +252,8 @@ public class PaymentServiceTest {
             Page<PaymentDto> results = paymentService.search(filter, pageableRequest);
 
             // then
-            assertThat(results).isNotNull();
-            assertThat(results).isNotEmpty();
+            assertNotNull(results);
+            assertFalse(results.getContent().isEmpty());
             assertEquals(1, results.getContent().size());
             PaymentDto dtoFromResults = results.getContent().getFirst();
             assertTrue(dtoFromResults.getCreatedAt().isAfter(filter.getCreatedAfter()));
@@ -259,7 +264,7 @@ public class PaymentServiceTest {
     void shouldReturnPaymentDtoByCreatedBefore() {
         // given
         PaymentFilter filter = new PaymentFilter();
-        filter.setCreatedAfter(payment.getCreatedAt().plus(1, ChronoUnit.HOURS));
+        filter.setCreatedBefore(payment.getCreatedAt().plus(1, ChronoUnit.HOURS));
         Specification<Payment> spec = PaymentFilterFactory.fromFilter(filter);
 
         Pageable pageableRequest = PageRequest.of(0, 10);
@@ -269,9 +274,8 @@ public class PaymentServiceTest {
 
         try (MockedStatic mocked = mockStatic(PaymentFilterFactory.class)) {
 
-            mocked.when(
-                    (MockedStatic.Verification) PaymentFilterFactory.fromFilter(filter)
-            ).thenReturn(spec);
+            mocked.when(() -> PaymentFilterFactory.fromFilter(filter)).thenReturn(spec);
+
             when(paymentRepository.findAll(spec, pageableRequest)).thenReturn(pageDtoResponse);
             when(paymentMapper.toDto(payment)).thenReturn(paymentDto);
 
@@ -279,8 +283,8 @@ public class PaymentServiceTest {
             Page<PaymentDto> results = paymentService.search(filter, pageableRequest);
 
             // then
-            assertThat(results).isNotNull();
-            assertThat(results).isNotEmpty();
+            assertNotNull(results);
+            assertFalse(results.getContent().isEmpty());
             assertEquals(1, results.getContent().size());
             PaymentDto dtoFromResults = results.getContent().getFirst();
             assertTrue(dtoFromResults.getCreatedAt().isBefore(filter.getCreatedAfter()));
@@ -302,9 +306,8 @@ public class PaymentServiceTest {
 
         try (MockedStatic mocked = mockStatic(PaymentFilterFactory.class)) {
 
-            mocked.when(
-                    (MockedStatic.Verification) PaymentFilterFactory.fromFilter(filter)
-            ).thenReturn(spec);
+            mocked.when(() -> PaymentFilterFactory.fromFilter(filter)).thenReturn(spec);
+
             when(paymentRepository.findAll(spec, pageableRequest)).thenReturn(pageDtoResponse);
             when(paymentMapper.toDto(payment)).thenReturn(paymentDto);
 
@@ -312,8 +315,8 @@ public class PaymentServiceTest {
             Page<PaymentDto> results = paymentService.search(filter, pageableRequest);
 
             // then
-            assertThat(results).isNotNull();
-            assertThat(results).isNotEmpty();
+            assertNotNull(results);
+            assertNotEquals(0, results.getNumberOfElements());
             assertEquals(1, results.getContent().size());
             PaymentDto dtoFromResults = results.getContent().getFirst();
             assertEquals(dtoFromResults.getStatus(), filter.getStatus());
@@ -345,9 +348,8 @@ public class PaymentServiceTest {
 
         try (MockedStatic mocked = mockStatic(PaymentFilterFactory.class)) {
 
-            mocked.when(
-                    (MockedStatic.Verification) PaymentFilterFactory.fromFilter(filter)
-            ).thenReturn(spec);
+            mocked.when(() -> PaymentFilterFactory.fromFilter(filter)).thenReturn(spec);
+
             when(paymentRepository.findAll(spec, pageableRequest)).thenReturn(pageDtoResponse);
             when(paymentMapper.toDto(payment)).thenReturn(paymentDto);
 
@@ -355,11 +357,11 @@ public class PaymentServiceTest {
             Page<PaymentDto> results = paymentService.search(filter, pageableRequest);
 
             // then
-            assertThat(results).isNotNull();
-            assertThat(results).isNotEmpty();
+            assertNotNull(results);
+            assertNotEquals(0, results.getNumberOfElements());
             assertEquals(0, results.getNumber());
             assertEquals(25, results.getSize());
-            assertEquals(defaultSort, pageDtoResponse.getSort());
+            assertEquals(defaultSort, results.getSort());
         }
     }
 }
