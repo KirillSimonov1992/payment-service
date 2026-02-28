@@ -1,5 +1,6 @@
-package com.iprody.payment.service.app.persistence.entity;
+package com.iprody.payment.service.app.persistence.service.dto;
 
+import com.iprody.payment.service.app.persistence.entity.PaymentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

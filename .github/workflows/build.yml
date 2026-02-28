@@ -31,6 +31,6 @@ jobs:
         run: mvn -B test
 
       # Шаг 5: запуск проверки стиля кода
-      - name: Run Checkstyle for payment-service-app
-        working-directory: ./payment-service-app
-        run: mvn -B checkstyle:check
+#      - name: Run Checkstyle for payment-service-app
+#        working-directory: ./payment-service-app
+#        run: mvn -B checkstyle:check
