@@ -1,4 +1,4 @@
-curl -G http://localhost:8080/payments/search \
+curl -v -G http://localhost:8080/payments/search \
   --data-urlencode "status=APPROVED" \
   --data-urlencode "currency=USD" \
   --data-urlencode "minAMount=10.00" \
@@ -6,4 +6,4 @@ curl -G http://localhost:8080/payments/search \
   --data-urlencode "page=0" \
   --data-urlencode "size=10" \
   --data-urlencode "sortBy=createdAt" \
-  --data-urlencode "direction=desc"
+  --data-urlencode "direction=desce"

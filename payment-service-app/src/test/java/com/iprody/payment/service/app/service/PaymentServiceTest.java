@@ -1,5 +1,6 @@
 package com.iprody.payment.service.app.service;
 
+import com.iprody.payment.service.app.controller.errorhandle.EntityNotFoundException;
 import com.iprody.payment.service.app.mapper.PaymentMapper;
 import com.iprody.payment.service.app.persistence.entity.Payment;
 import com.iprody.payment.service.app.persistence.service.dto.CreatePaymentDto;
@@ -9,7 +10,6 @@ import com.iprody.payment.service.app.persistency.PaymentFilter;
 import com.iprody.payment.service.app.persistency.PaymentFilterFactory;
 import com.iprody.payment.service.app.persistency.PaymentRepository;
 import com.iprody.payment.service.app.services.PaymentServiceImpl;
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,6 +38,11 @@ import java.util.UUID;
 import static com.iprody.payment.service.app.controller.PaymentController.DEFAULT_NUMBER_PAGE;
 import static com.iprody.payment.service.app.controller.PaymentController.DEFAULT_PAGE_SIZE;
 import static com.iprody.payment.service.app.controller.PaymentController.DEFAULT_SORT_FIELD;
+import static com.iprody.payment.service.app.controller.errorhandle.TypeMethod.DELETE_ENTITY;
+import static com.iprody.payment.service.app.controller.errorhandle.TypeMethod.UPDATE_ENTITY;
+import static com.iprody.payment.service.app.controller.errorhandle.TypeMethod.UPDATE_STATUS;
+import static com.iprody.payment.service.app.services.PaymentServiceImpl.CANT_UPDATE_STATUS;
+import static com.iprody.payment.service.app.services.PaymentServiceImpl.PAYMENT_NOT_FOUND;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -457,6 +462,50 @@ public class PaymentServiceTest {
         );
 
         // then
-        assertEquals("Платеж не найден: " + notExistsGuid, thrown.getMessage());
+        assertEquals(PAYMENT_NOT_FOUND, thrown.getMessage());
+        assertEquals(notExistsGuid, thrown.getEntityId());
+        assertEquals(UPDATE_ENTITY, thrown.getOperation());
+    }
+
+    @Test
+    void shouldReturnWhenUpdateStatusEntityNotFound() {
+        // given
+        final UUID notExistsGuid = UUID.randomUUID();
+
+        when(paymentRepository.existsById(notExistsGuid)).thenReturn(false);
+
+        // when
+        EntityNotFoundException thrown = assertThrows(
+                EntityNotFoundException.class,
+                () -> {
+                    paymentService.updateStatus(notExistsGuid, PaymentStatus.NOT_SENT);
+                }
+        );
+
+        // then
+        assertEquals(CANT_UPDATE_STATUS, thrown.getMessage());
+        assertEquals(notExistsGuid, thrown.getEntityId());
+        assertEquals(UPDATE_STATUS, thrown.getOperation());
+    }
+
+    @Test
+    void shouldReturnWhenDeleteEntityNotFound() {
+        // given
+        final UUID notExistsGuid = UUID.randomUUID();
+
+        when(paymentRepository.existsById(notExistsGuid)).thenReturn(false);
+
+        // when
+        EntityNotFoundException thrown = assertThrows(
+                EntityNotFoundException.class,
+                () -> {
+                    paymentService.delete(notExistsGuid);
+                }
+        );
+
+        // then
+        assertEquals(PAYMENT_NOT_FOUND, thrown.getMessage());
+        assertEquals(notExistsGuid, thrown.getEntityId());
+        assertEquals(DELETE_ENTITY, thrown.getOperation());
     }
 }
