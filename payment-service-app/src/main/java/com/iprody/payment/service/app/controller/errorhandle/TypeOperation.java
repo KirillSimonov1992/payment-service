@@ -1,6 +1,6 @@
 package com.iprody.payment.service.app.controller.errorhandle;
 
-public enum TypeMethod {
+public enum TypeOperation {
     FIND_BY_ID,
     UPDATE_ENTITY,
     UPDATE_STATUS,

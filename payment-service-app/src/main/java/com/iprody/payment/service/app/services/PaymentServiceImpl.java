@@ -20,10 +20,10 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import static com.iprody.payment.service.app.controller.errorhandle.TypeMethod.DELETE_ENTITY;
-import static com.iprody.payment.service.app.controller.errorhandle.TypeMethod.FIND_BY_ID;
-import static com.iprody.payment.service.app.controller.errorhandle.TypeMethod.UPDATE_ENTITY;
-import static com.iprody.payment.service.app.controller.errorhandle.TypeMethod.UPDATE_STATUS;
+import static com.iprody.payment.service.app.controller.errorhandle.TypeOperation.DELETE_ENTITY;
+import static com.iprody.payment.service.app.controller.errorhandle.TypeOperation.FIND_BY_ID;
+import static com.iprody.payment.service.app.controller.errorhandle.TypeOperation.UPDATE_ENTITY;
+import static com.iprody.payment.service.app.controller.errorhandle.TypeOperation.UPDATE_STATUS;
 
 @Service
 @AllArgsConstructor
@@ -63,6 +63,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         Payment updated = paymentMapper.toEntity(dto);
         updated.setGuid(guid);
+        updated.setUpdatedAt(Instant.now());
         Payment saved = paymentRepository.save(updated);
         return paymentMapper.toDto(saved);
     }

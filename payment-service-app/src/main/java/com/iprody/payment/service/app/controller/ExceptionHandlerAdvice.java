@@ -15,7 +15,7 @@ public class ExceptionHandlerAdvice {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler
     public ErrorMessageDto handleIllegalArgumentException(IllegalArgumentException ex) {
-        return new ErrorMessageDto(ex.getMessage(), Instant.now(), null, null);
+        return new ErrorMessageDto(ex.getMessage(), Instant.now());
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -27,6 +27,6 @@ public class ExceptionHandlerAdvice {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler
     public ErrorMessageDto handleOther(Exception ex) {
-        return new ErrorMessageDto(ex.getMessage(), Instant.now(), null, null);
+        return new ErrorMessageDto(ex.getMessage(), Instant.now());
     }
 }

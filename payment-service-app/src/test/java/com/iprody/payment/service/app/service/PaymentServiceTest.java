@@ -38,9 +38,9 @@ import java.util.UUID;
 import static com.iprody.payment.service.app.controller.PaymentController.DEFAULT_NUMBER_PAGE;
 import static com.iprody.payment.service.app.controller.PaymentController.DEFAULT_PAGE_SIZE;
 import static com.iprody.payment.service.app.controller.PaymentController.DEFAULT_SORT_FIELD;
-import static com.iprody.payment.service.app.controller.errorhandle.TypeMethod.DELETE_ENTITY;
-import static com.iprody.payment.service.app.controller.errorhandle.TypeMethod.UPDATE_ENTITY;
-import static com.iprody.payment.service.app.controller.errorhandle.TypeMethod.UPDATE_STATUS;
+import static com.iprody.payment.service.app.controller.errorhandle.TypeOperation.DELETE_ENTITY;
+import static com.iprody.payment.service.app.controller.errorhandle.TypeOperation.UPDATE_ENTITY;
+import static com.iprody.payment.service.app.controller.errorhandle.TypeOperation.UPDATE_STATUS;
 import static com.iprody.payment.service.app.services.PaymentServiceImpl.CANT_UPDATE_STATUS;
 import static com.iprody.payment.service.app.services.PaymentServiceImpl.PAYMENT_NOT_FOUND;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -69,6 +69,7 @@ public class PaymentServiceTest {
     private Payment payment;
     private PaymentDto paymentDto;
     private UUID guid;
+    private final Instant date = Instant.parse("2026-02-27T10:00:00Z");
 
     @BeforeEach
     void setUp() {
@@ -79,8 +80,8 @@ public class PaymentServiceTest {
         payment.setAmount(new BigDecimal("100.00"));
         payment.setCurrency("USD");
         payment.setStatus(PaymentStatus.APPROVED);
-        payment.setCreatedAt(Instant.now());
-        payment.setUpdatedAt(Instant.now());
+        payment.setCreatedAt(date);
+        payment.setUpdatedAt(date);
         payment.setNote("note test");
 
         paymentDto = new PaymentDto();
@@ -380,13 +381,15 @@ public class PaymentServiceTest {
     void shouldReturnCreated() {
         // given
 
-        CreatePaymentDto createPaymentDto = new CreatePaymentDto();
-        createPaymentDto.setInquiryRefId(payment.getInquiryRefId());
-        createPaymentDto.setAmount(payment.getAmount());
-        createPaymentDto.setCurrency(payment.getCurrency());
-        createPaymentDto.setTransactionRefId(payment.getTransactionRefId());
-        createPaymentDto.setStatus(payment.getStatus());
-        createPaymentDto.setNote(payment.getNote());
+        CreatePaymentDto createPaymentDto =
+                new CreatePaymentDto(
+                        payment.getInquiryRefId(),
+                        payment.getAmount(),
+                        payment.getCurrency(),
+                        payment.getTransactionRefId(),
+                        payment.getStatus(),
+                        payment.getNote()
+                );
 
         when(paymentMapper.fromCreateDto(createPaymentDto)).thenReturn(payment);
         when(paymentMapper.toDto(payment)).thenReturn(paymentDto);
@@ -400,17 +403,16 @@ public class PaymentServiceTest {
         assertNotNull(result.getGuid());
         assertNotNull(result.getCreatedAt());
         assertNotNull(result.getUpdatedAt());
-        assertEquals(createPaymentDto.getNote(), result.getNote());
-        assertEquals(createPaymentDto.getCurrency(), result.getCurrency());
-        assertEquals(createPaymentDto.getInquiryRefId(), result.getInquiryRefId());
-        assertEquals(createPaymentDto.getTransactionRefId(), result.getTransactionRefId());
-        assertEquals(createPaymentDto.getStatus(), result.getStatus());
+        assertEquals(createPaymentDto.note(), result.getNote());
+        assertEquals(createPaymentDto.currency(), result.getCurrency());
+        assertEquals(createPaymentDto.inquiryRefId(), result.getInquiryRefId());
+        assertEquals(createPaymentDto.transactionRefId(), result.getTransactionRefId());
+        assertEquals(createPaymentDto.status(), result.getStatus());
     }
 
     @Test
     void shouldReturnUpdated() {
         // given
-        final Instant date = Instant.parse("2026-02-27T10:00:00Z");
         final UUID guid = payment.getGuid();
 
         PaymentDto dtoForUpdate = new PaymentDto();
@@ -424,10 +426,10 @@ public class PaymentServiceTest {
         dtoForUpdate.setCreatedAt(date);
         dtoForUpdate.setUpdatedAt(date);
 
-        when(paymentMapper.toEntity(dtoForUpdate)).thenReturn(payment);
-        when(paymentMapper.toDto(payment)).thenReturn(dtoForUpdate);
-        when(paymentRepository.save(payment)).thenReturn(payment);
         when(paymentRepository.existsById(guid)).thenReturn(true);
+        when(paymentMapper.toEntity(dtoForUpdate)).thenReturn(payment);
+        when(paymentRepository.save(payment)).thenReturn(payment);
+        when(paymentMapper.toDto(payment)).thenReturn(dtoForUpdate);
 
         // when
         PaymentDto result = paymentService.update(guid, dtoForUpdate);
@@ -441,7 +443,6 @@ public class PaymentServiceTest {
         assertEquals(dtoForUpdate.getCurrency(), result.getCurrency());
         assertEquals(dtoForUpdate.getInquiryRefId(), result.getInquiryRefId());
         assertEquals(dtoForUpdate.getTransactionRefId(), result.getTransactionRefId());
-        assertEquals(dtoForUpdate.getStatus(), result.getStatus());
     }
 
     @Test

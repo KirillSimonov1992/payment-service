@@ -6,6 +6,10 @@ import java.util.UUID;
 public record ErrorMessageDto(
         String message,
         Instant timestamp,
-        TypeMethod operation,
+        TypeOperation operation,
         UUID entityGuid
-) {}
+) {
+    public ErrorMessageDto(String message, Instant timestamp) {
+        this(message, timestamp, null, null);
+    }
+}
