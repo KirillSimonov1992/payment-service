@@ -1,5 +1,6 @@
 package com.iprody.payment.service.app.services;
 
+import com.iprody.payment.service.app.controller.errorhandle.EntityNotFoundException;
 import com.iprody.payment.service.app.mapper.PaymentMapper;
 import com.iprody.payment.service.app.persistence.entity.Payment;
 import com.iprody.payment.service.app.persistence.entity.PaymentStatus;
@@ -8,24 +9,28 @@ import com.iprody.payment.service.app.persistence.service.dto.PaymentDto;
 import com.iprody.payment.service.app.persistency.PaymentFilter;
 import com.iprody.payment.service.app.persistency.PaymentFilterFactory;
 import com.iprody.payment.service.app.persistency.PaymentRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import static com.iprody.payment.service.app.controller.errorhandle.TypeOperation.DELETE_ENTITY;
+import static com.iprody.payment.service.app.controller.errorhandle.TypeOperation.FIND_BY_ID;
+import static com.iprody.payment.service.app.controller.errorhandle.TypeOperation.UPDATE_ENTITY;
+import static com.iprody.payment.service.app.controller.errorhandle.TypeOperation.UPDATE_STATUS;
+
 @Service
 @AllArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
 
+    public static final String PAYMENT_NOT_FOUND = "Payment not found.";
+    public static final String CANT_UPDATE_STATUS = "Can't update status. " + PAYMENT_NOT_FOUND;
     private final PaymentRepository paymentRepository;
     private final PaymentMapper paymentMapper;
 
@@ -44,18 +49,21 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentDto findById(UUID guid) {
         return paymentRepository.findById(guid)
                 .map(paymentMapper::toDto)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.OK, "Платеж не найден: " + guid));
+                .orElseThrow(() ->
+                        new EntityNotFoundException(PAYMENT_NOT_FOUND, FIND_BY_ID, guid)
+                );
     }
 
     @Override
     @Transactional
     public PaymentDto update(UUID guid, PaymentDto dto) {
         if (!paymentRepository.existsById(guid)) {
-            throw new EntityNotFoundException("Платеж не найден: " + guid);
+            throw new EntityNotFoundException(PAYMENT_NOT_FOUND, UPDATE_ENTITY, guid);
         }
 
         Payment updated = paymentMapper.toEntity(dto);
         updated.setGuid(guid);
+        updated.setUpdatedAt(Instant.now());
         Payment saved = paymentRepository.save(updated);
         return paymentMapper.toDto(saved);
     }
@@ -63,6 +71,9 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     @Transactional
     public void updateStatus(UUID guid, PaymentStatus newStatus) {
+        if (!paymentRepository.existsById(guid)) {
+            throw new EntityNotFoundException(CANT_UPDATE_STATUS, UPDATE_STATUS, guid);
+        }
         paymentRepository.updateStatus(guid, newStatus);
     }
 
@@ -73,8 +84,8 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public void delete(UUID guid) {
-        if (!paymentRepository.existsByGuid(guid)) {
-            throw new ResponseStatusException(HttpStatus.NO_CONTENT, "Платеж не найден: " + guid);
+        if (!paymentRepository.existsById(guid)) {
+            throw new EntityNotFoundException(PAYMENT_NOT_FOUND, DELETE_ENTITY, guid);
         }
         paymentRepository.deleteById(guid);
     }

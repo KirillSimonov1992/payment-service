@@ -22,5 +22,4 @@ public interface PaymentRepository extends JpaRepository<Payment, UUID>, JpaSpec
     @Query("update Payment p set p.note = :newNote where p.guid = :guid")
     void updateNote(UUID guid, String newNOte);
 
-    boolean existsByGuid(UUID guid);
 }
