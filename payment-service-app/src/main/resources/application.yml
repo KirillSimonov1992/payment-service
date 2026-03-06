@@ -4,10 +4,18 @@ server:
 spring:
   application:
     name: payment-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8085/realms/iprody-lms
   datasource: # параметры подключения к БД
     url: jdbc:postgresql://postgres:5432/payment-db # URL подключения к БД
+#    url: jdbc:postgresql://localhost:5432/payment-db # URL подключения к БД
     username: admin
     password: secret
+#    username: postgres
+#    password: postgres
     driver-class-name: org.postgresql.Driver  # класс jdbc драйвера
   jpa:
     hibernate:
@@ -21,3 +29,7 @@ spring:
   liquibase:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yaml
+
+logging:
+  level:
+    org.springframework.security: DEBUG
