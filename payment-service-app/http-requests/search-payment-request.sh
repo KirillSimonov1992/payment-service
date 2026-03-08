@@ -1,4 +1,7 @@
-curl -v -G http://localhost:8080/payments/search \
+TOKEN=eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJMWnFWTEJfTVplcFVGQ3ViZ0pDakVOVFhzOU1lOEJaT1I5Q3dodjVSbnQ4In0.eyJleHAiOjE3NzI4MTc0MjIsImlhdCI6MTc3MjgxNzEyMiwianRpIjoiNDM3MjhhMmMtYjg3ZS00YmI2LThiMzYtMDNjY2E0N2YwOTRmIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDg1L3JlYWxtcy9pcHJvZHktbG1zIiwic3ViIjoiM2U0Y2EyYTgtZWVmOS00YmQzLWJjM2ItZDM3MzYxMzBmOWY1IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiYmFzaWNfY2xpZW50Iiwic2Vzc2lvbl9zdGF0ZSI6IjY3N2M4MjdiLWY5NDktNDZiYy1iNDEzLWJkMDczZWY5MTEwNiIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiaHR0cDovL2xvY2FsaG9zdDo4MDg1Il0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJhZG1pbiJdfSwic2NvcGUiOiJlbWFpbCBwcm9maWxlIiwic2lkIjoiNjc3YzgyN2ItZjk0OS00NmJjLWI0MTMtYmQwNzNlZjkxMTA2IiwiZW1haWxfdmVyaWZpZWQiOnRydWUsIm5hbWUiOiJ0ZXN0cmVhZGVyIHRlc3RyZWFkZXIiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJyZWFkZXJfdXNlciIsImdpdmVuX25hbWUiOiJ0ZXN0cmVhZGVyIiwiZmFtaWx5X25hbWUiOiJ0ZXN0cmVhZGVyIiwiZW1haWwiOiJ0ZXN0cmVhZGVyQGV4YW1wbGUubG9jYWwifQ.yhbDf0Tnoa7xxdvKAM3LjzpyrM8-EAZyatWuw3r6hidPGfL8oakGPgHC-VrZGs0SQLQia4uh_ycdRHTyNX_8YOWe68qYc99mId4YuLlNLzxnm7VxR9V5bVdDsXNSmFUTwK_xpBaSvTVbBiwhM3vx-NL-yuj7GHBhyqDNlzGrunFlFaoVMpzL24ZbFpzZcRPEGifPTJCbW-vxpgPRpuJQ1oIRsFAa8i-cHc3w0WJAW4n4eMTiy9naB-11auAVkiF1lUjuBvfBSy7YokPGFNKrt35hXWAk9sNxLyqzT3YvCSdBENBjj0WquTzGjnLGKXlXkgRi5lkCZxyYaz0d0MSLzg
+
+curl -v -H "Authorization: Bearer $TOKEN" \
+-G http://localhost:8082/payments/search \
   --data-urlencode "status=APPROVED" \
   --data-urlencode "currency=USD" \
   --data-urlencode "minAMount=10.00" \
@@ -6,4 +9,4 @@ curl -v -G http://localhost:8080/payments/search \
   --data-urlencode "page=0" \
   --data-urlencode "size=10" \
   --data-urlencode "sortBy=createdAt" \
-  --data-urlencode "direction=desce"
+  --data-urlencode "direction=desc"

@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -42,21 +43,25 @@ public class PaymentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('admin')")
     public PaymentDto create(@RequestBody CreatePaymentDto paymentDto) {
         return paymentService.create(paymentDto);
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('admin', 'reader')")
     public List<PaymentDto> findAll() {
         return paymentService.findAll();
     }
 
     @GetMapping("/{guid}")
+    @PreAuthorize("hasAnyRole('admin', 'reader')")
     public PaymentDto get(@PathVariable UUID guid) {
         return paymentService.findById(guid);
     }
 
     @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('admin', 'reader')")
     public Page<PaymentDto> search(
             @ModelAttribute PaymentFilter filter,
             @RequestParam(defaultValue = DEFAULT_NUMBER_PAGE) int page,
@@ -74,22 +79,26 @@ public class PaymentController {
     }
 
     @PutMapping("/{guid}")
+    @PreAuthorize("hasRole('admin')")
     public PaymentDto update(@PathVariable UUID guid, @RequestBody PaymentDto updateDto) {
         return paymentService.update(guid, updateDto);
     }
 
     @DeleteMapping("/{guid}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('admin')")
     public void delete(@PathVariable UUID guid) {
         paymentService.delete(guid);
     }
 
     @PatchMapping("/{guid}/status")
+    @PreAuthorize("hasRole('admin')")
     public void updateStatus(@PathVariable UUID guid, @RequestBody PaymentStatusDto dto) {
         paymentService.updateStatus(guid, dto.getPaymentStatus());
     }
 
     @PatchMapping("/{guid}/note")
+    @PreAuthorize("hasRole('admin')")
     public void updateNote(@PathVariable UUID guid, @RequestBody PaymentNoteDto dto) {
         paymentService.updateNote(guid, dto.getNote());
     }
