@@ -16,6 +16,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -31,13 +32,16 @@ public class PaymentServiceImpl implements PaymentService {
 
     public static final String PAYMENT_NOT_FOUND = "Payment not found.";
     public static final String CANT_UPDATE_STATUS = "Can't update status. " + PAYMENT_NOT_FOUND;
+
     private final PaymentRepository paymentRepository;
     private final PaymentMapper paymentMapper;
+
+    private final Clock clock;
 
     @Override
     public PaymentDto create(CreatePaymentDto createPaymentDto) {
         final Payment entity = paymentMapper.fromCreateDto(createPaymentDto);
-        final Instant now = Instant.now();
+        final Instant now = Instant.now(clock);
         entity.setCreatedAt(now);
         entity.setUpdatedAt(now);
         return paymentMapper.toDto(
@@ -78,6 +82,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    @Transactional
     public void updateNote(UUID guid, String newNote) {
         paymentRepository.updateNote(guid, newNote);
     }

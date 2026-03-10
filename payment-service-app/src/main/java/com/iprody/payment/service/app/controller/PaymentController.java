@@ -85,7 +85,6 @@ public class PaymentController {
     }
 
     @DeleteMapping("/{guid}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasRole('admin')")
     public void delete(@PathVariable UUID guid) {
         paymentService.delete(guid);
