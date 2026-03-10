@@ -29,6 +29,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
@@ -57,11 +58,16 @@ import static org.mockito.Mockito.when;
 @MockitoSettings(strictness = Strictness.STRICT_STUBS)
 public class PaymentServiceTest {
 
+    private static final Instant FIXED_INSTANT = Instant.parse("2026-02-27T10:00:00Z");
+
     @Mock
     private PaymentRepository paymentRepository;
 
     @Mock
     private PaymentMapper paymentMapper;
+
+    @Mock
+    private Clock clock;
 
     @InjectMocks
     private PaymentServiceImpl paymentService;
@@ -69,7 +75,6 @@ public class PaymentServiceTest {
     private Payment payment;
     private PaymentDto paymentDto;
     private UUID guid;
-    private final Instant date = Instant.parse("2026-02-27T10:00:00Z");
 
     @BeforeEach
     void setUp() {
@@ -80,8 +85,8 @@ public class PaymentServiceTest {
         payment.setAmount(new BigDecimal("100.00"));
         payment.setCurrency("USD");
         payment.setStatus(PaymentStatus.APPROVED);
-        payment.setCreatedAt(date);
-        payment.setUpdatedAt(date);
+        payment.setCreatedAt(FIXED_INSTANT);
+        payment.setUpdatedAt(FIXED_INSTANT);
         payment.setNote("note test");
 
         paymentDto = new PaymentDto();
@@ -423,8 +428,8 @@ public class PaymentServiceTest {
         dtoForUpdate.setTransactionRefId(payment.getTransactionRefId());
         dtoForUpdate.setStatus(payment.getStatus());
         dtoForUpdate.setNote(payment.getNote());
-        dtoForUpdate.setCreatedAt(date);
-        dtoForUpdate.setUpdatedAt(date);
+        dtoForUpdate.setCreatedAt(FIXED_INSTANT);
+        dtoForUpdate.setUpdatedAt(FIXED_INSTANT);
 
         when(paymentRepository.existsById(guid)).thenReturn(true);
         when(paymentMapper.toEntity(dtoForUpdate)).thenReturn(payment);
