@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8082
 
 spring:
   application:
@@ -10,12 +10,12 @@ spring:
         jwt:
           issuer-uri: http://localhost:8085/realms/iprody-lms
   datasource: # параметры подключения к БД
-    url: jdbc:postgresql://postgres:5432/payment-db # URL подключения к БД
-#    url: jdbc:postgresql://localhost:5432/payment-db # URL подключения к БД
-    username: admin
-    password: secret
-#    username: postgres
-#    password: postgres
+#    url: jdbc:postgresql://postgres:5432/payment-db # URL подключения к БД
+    url: jdbc:postgresql://localhost:5432/payment-db # URL подключения к БД
+#    username: admin
+#    password: secret
+    username: postgres
+    password: postgres
     driver-class-name: org.postgresql.Driver  # класс jdbc драйвера
   jpa:
     hibernate:
@@ -32,4 +32,14 @@ spring:
 
 logging:
   level:
-    org.springframework.security: DEBUG
+    root: INFO
+    org.springframework.security: INFO
+    org.springframework.web: INFO
+    org.springframework.data: INFO
+    com.iprody.payment: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,liquibase,beans,metrics,env,loggers.

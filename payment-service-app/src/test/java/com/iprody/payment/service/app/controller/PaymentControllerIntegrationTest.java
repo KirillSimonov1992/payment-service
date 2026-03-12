@@ -102,7 +102,7 @@ public class PaymentControllerIntegrationTest extends AbstractPostgresIntegratio
 
         String json = objectMapper.writeValueAsString(dto);
 
-        // when - then
+        // when
         String response =
                 mockMvc.perform(
                                 post("/payments")
@@ -122,6 +122,7 @@ public class PaymentControllerIntegrationTest extends AbstractPostgresIntegratio
                         .getResponse()
                         .getContentAsString();
 
+        // then
         PaymentDto created = objectMapper.readValue(response, PaymentDto.class);
 
         Optional<Payment> saved = paymentRepository.findById(created.getGuid());
@@ -152,10 +153,11 @@ public class PaymentControllerIntegrationTest extends AbstractPostgresIntegratio
     void shouldReturn404ForNonExistentPayment() throws Exception {
         // given
         UUID noneExistendId = UUID.randomUUID();
-
+        // when
         mockMvc.perform(get("/payments/" + noneExistendId)
                         .with(TestJwtFactory.jwtWithRole("test-user", "reader"))
                         .accept(MediaType.APPLICATION_JSON))
+                // then
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message").value(PAYMENT_NOT_FOUND))
@@ -166,10 +168,8 @@ public class PaymentControllerIntegrationTest extends AbstractPostgresIntegratio
 
     @Test
     void shouldReturnOnlyUSD() throws Exception {
-        // given - when
-
         String searchCurrency = "USD";
-
+        // when
         mockMvc.perform(
                         get("/payments/search")
                                 .with(TestJwtFactory.jwtWithRole("test-user", "reader"))
@@ -185,10 +185,10 @@ public class PaymentControllerIntegrationTest extends AbstractPostgresIntegratio
 
     @Test
     void shouldReturnOnlyNotSentStatus() throws Exception {
-        // given - when
+        // given
 
         PaymentStatus searchStatus = NOT_SENT;
-
+        // when
         mockMvc.perform(
                         get("/payments/search")
                                 .with(
@@ -208,10 +208,9 @@ public class PaymentControllerIntegrationTest extends AbstractPostgresIntegratio
 
     @Test
     void shouldDeleteByGuidAndGetNotFound() throws Exception {
-        // given - when
-
+        // given
         String guid = "00000000-0000-0000-0000-000000000000";
-
+        // when
         mockMvc.perform(
                         delete("/payments/" + guid)
                                 .with(TestJwtFactory.jwtWithRole("test-user", "admin"))
@@ -227,13 +226,14 @@ public class PaymentControllerIntegrationTest extends AbstractPostgresIntegratio
 
     @Test
     void shouldUpdateStatusThenGet404() throws Exception {
-        // given - when
+        // given
 
         String guid = "00000000-0000-0000-0000-000000000000";
         PaymentStatusDto dto = new PaymentStatusDto(NOT_SENT);
 
         String body = objectMapper.writeValueAsString(dto);
 
+        // when
         mockMvc.perform(
                         patch("/payments/" + guid + "/status")
                                 .with(TestJwtFactory.jwtWithRole("test-user", "admin"))
@@ -246,13 +246,12 @@ public class PaymentControllerIntegrationTest extends AbstractPostgresIntegratio
 
     @Test
     void shouldUpdateStatus() throws Exception {
-        // given - when
-
+        // given
         String guid = "00000000-0000-0000-0000-000000000001";
         PaymentStatusDto dto = new PaymentStatusDto(NOT_SENT);
-
         String body = objectMapper.writeValueAsString(dto);
 
+        // when
         mockMvc.perform(
                         patch("/payments/" + guid + "/status")
                                 .with(TestJwtFactory.jwtWithRole("test-user", "admin"))
@@ -269,13 +268,12 @@ public class PaymentControllerIntegrationTest extends AbstractPostgresIntegratio
 
     @Test
     void shouldUpdateNote() throws Exception {
-        // given - when
-
+        // given
         String guid = "00000000-0000-0000-0000-000000000001";
         PaymentNoteDto dto = new PaymentNoteDto("new note");
 
         String body = objectMapper.writeValueAsString(dto);
-
+        // when
         mockMvc.perform(
                         patch("/payments/" + guid + "/note")
                                 .with(TestJwtFactory.jwtWithRole("test-user", "admin"))
@@ -292,11 +290,11 @@ public class PaymentControllerIntegrationTest extends AbstractPostgresIntegratio
 
     @Test
     void shouldDeleteByGuid() throws Exception {
-        // given - when
+        // given
         String guid = "00000000-0000-0000-0000-000000000004";
         Optional<Payment> p = paymentRepository.findById(UUID.fromString(guid));
         assertThat(p).isNotEmpty();
-
+        // when
         mockMvc.perform(
                         delete("/payments/" + guid)
                                 .with(TestJwtFactory.jwtWithRole("test-user", "admin"))
