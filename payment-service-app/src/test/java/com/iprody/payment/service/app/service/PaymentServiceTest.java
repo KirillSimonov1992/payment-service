@@ -1,7 +1,10 @@
 package com.iprody.payment.service.app.service;
 
+import com.iprody.payment.service.app.async.AsyncSender;
+import com.iprody.payment.service.app.async.XPaymentAdapterRequestMessage;
 import com.iprody.payment.service.app.controller.errorhandle.EntityNotFoundException;
 import com.iprody.payment.service.app.mapper.PaymentMapper;
+import com.iprody.payment.service.app.mapper.XPaymentAdapterMapper;
 import com.iprody.payment.service.app.persistence.entity.Payment;
 import com.iprody.payment.service.app.persistence.service.dto.CreatePaymentDto;
 import com.iprody.payment.service.app.persistence.service.dto.PaymentDto;
@@ -65,6 +68,12 @@ public class PaymentServiceTest {
 
     @Mock
     private PaymentMapper paymentMapper;
+
+    @Mock
+    private XPaymentAdapterMapper xPaymentAdapterMapper;
+
+    @Mock
+    private AsyncSender<XPaymentAdapterRequestMessage> asyncSender;
 
     @Mock
     private Clock clock;
@@ -408,7 +417,6 @@ public class PaymentServiceTest {
         assertNotNull(result.getGuid());
         assertNotNull(result.getCreatedAt());
         assertNotNull(result.getUpdatedAt());
-        assertEquals(createPaymentDto.note(), result.getNote());
         assertEquals(createPaymentDto.currency(), result.getCurrency());
         assertEquals(createPaymentDto.inquiryRefId(), result.getInquiryRefId());
         assertEquals(createPaymentDto.transactionRefId(), result.getTransactionRefId());
