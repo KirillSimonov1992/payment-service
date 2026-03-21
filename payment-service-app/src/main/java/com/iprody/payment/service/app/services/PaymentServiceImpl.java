@@ -1,7 +1,10 @@
 package com.iprody.payment.service.app.services;
 
+import com.iprody.payment.service.app.async.AsyncSender;
+import com.iprody.payment.service.app.async.XPaymentAdapterRequestMessage;
 import com.iprody.payment.service.app.controller.errorhandle.EntityNotFoundException;
 import com.iprody.payment.service.app.mapper.PaymentMapper;
+import com.iprody.payment.service.app.mapper.XPaymentAdapterMapper;
 import com.iprody.payment.service.app.persistence.entity.Payment;
 import com.iprody.payment.service.app.persistence.entity.PaymentStatus;
 import com.iprody.payment.service.app.persistence.service.dto.CreatePaymentDto;
@@ -36,6 +39,8 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final PaymentMapper paymentMapper;
+    private final XPaymentAdapterMapper xPaymentAdapterMapper;
+    private final AsyncSender<XPaymentAdapterRequestMessage> asyncSender;
 
     private final Clock clock;
 
@@ -45,9 +50,13 @@ public class PaymentServiceImpl implements PaymentService {
         final Instant now = Instant.now(clock);
         entity.setCreatedAt(now);
         entity.setUpdatedAt(now);
-        return paymentMapper.toDto(
+        PaymentDto saved = paymentMapper.toDto(
                 paymentRepository.save(entity)
         );
+        // Отправить сообщение в платежный сервис платежей
+        asyncSender.send(xPaymentAdapterMapper.toXPaymentAdapterRequestMessage(saved));
+        entity.setNote("Payment has status PROCESSING.");
+        return saved;
     }
 
     @Override
