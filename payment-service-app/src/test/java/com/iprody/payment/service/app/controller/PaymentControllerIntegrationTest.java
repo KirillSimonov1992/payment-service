@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.iprody.payment.service.app.AbstractPostgresIntegrationTest;
 import com.iprody.payment.service.app.TestJwtFactory;
+import com.iprody.payment.service.app.async.AsyncListener;
+import com.iprody.payment.service.app.async.AsyncSender;
 import com.iprody.payment.service.app.persistence.entity.Payment;
 import com.iprody.payment.service.app.persistence.entity.PaymentStatus;
 import com.iprody.payment.service.app.persistence.service.dto.PaymentDto;
@@ -19,6 +21,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -56,6 +59,12 @@ public class PaymentControllerIntegrationTest extends AbstractPostgresIntegratio
             return Clock.fixed(FIXED_INSTANT, ZoneId.of("UTC"));
         }
     }
+
+    @MockitoBean
+    private AsyncListener asyncListener;
+
+    @MockitoBean
+    private AsyncSender asyncSender;
 
     @Autowired
     private MockMvc mockMvc;
