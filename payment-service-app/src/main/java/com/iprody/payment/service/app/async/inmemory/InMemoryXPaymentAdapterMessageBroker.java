@@ -1,9 +1,12 @@
-package com.iprody.payment.service.app.async;
+package com.iprody.payment.service.app.async.inmemory;
 
+import com.iprody.payment.service.app.async.AsyncListener;
+import com.iprody.payment.service.app.async.AsyncSender;
+import com.iprody.payment.service.app.async.XPaymentAdapterRequestMessage;
+import com.iprody.payment.service.app.async.XPaymentAdapterResponseMessage;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -16,7 +19,7 @@ import static com.iprody.payment.service.app.async.XPaymentAdapterStatus.CANCELE
 import static com.iprody.payment.service.app.async.XPaymentAdapterStatus.SUCCEEDED;
 
 @Slf4j
-@Service
+//@Service
 class InMemoryXPaymentAdapterMessageBroker
         implements AsyncSender<XPaymentAdapterRequestMessage> {
 

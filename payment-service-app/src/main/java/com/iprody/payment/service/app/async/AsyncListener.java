@@ -5,7 +5,7 @@ package com.iprody.payment.service.app.async;
  *
  * @param <T> тип сообщения, который обрабатывается.
  */
-interface AsyncListener<T extends Message> {
+public interface AsyncListener<T extends Message> {
 
     /**
      * Вызывается для каждого нового входящего сообщения.
