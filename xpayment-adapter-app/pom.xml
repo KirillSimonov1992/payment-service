@@ -107,7 +107,6 @@
                         <configuration>
                             <inputSpec>${project.basedir}/xpayment-api.openapi.yml</inputSpec>
                             <generatorName>java</generatorName>
-                            <verbose>true</verbose>
                             <library>resttemplate</library>
                             <output>${project.build.directory}/generated-sources/openapi</output>
                             <apiPackage>ru.iprody.xpayment.api.client</apiPackage>
