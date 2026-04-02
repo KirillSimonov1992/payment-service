@@ -105,7 +105,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>xpayment-api.openapi.yml</inputSpec>
+                            <inputSpec>${project.basedir}/xpayment-api.openapi.yml</inputSpec>
                             <generatorName>java</generatorName>
                             <verbose>true</verbose>
                             <library>resttemplate</library>
