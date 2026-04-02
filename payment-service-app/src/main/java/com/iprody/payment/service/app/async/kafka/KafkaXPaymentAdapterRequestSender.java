@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class KafkaXPaymentAdapterRequestSender
-    implements AsyncSender<XPaymentAdapterRequestMessage> {
+        implements AsyncSender<XPaymentAdapterRequestMessage> {
 
     private final KafkaTemplate<String, XPaymentAdapterRequestMessage> template;
 
@@ -20,7 +20,7 @@ public class KafkaXPaymentAdapterRequestSender
     @Autowired
     public KafkaXPaymentAdapterRequestSender(
             KafkaTemplate<String, XPaymentAdapterRequestMessage> template,
-            @Value("${app.kafka.topics.xpayment-adapter.request:xpayment-adapter.requests}") String topic
+            @Value("${app.kafka.topics.x-payment-adapter.request:xpayment-adapter.requests}") String topic
     ) {
         this.template = template;
         this.topic = topic;
@@ -29,8 +29,18 @@ public class KafkaXPaymentAdapterRequestSender
     @Override
     public void send(XPaymentAdapterRequestMessage message) {
         String key = message.getPaymentGuid().toString(); // фиксируем партицирование по платежу
-        log.info("Sending XPayment Adapter request: quid={}, amount={}, currency={} -> topic={}",
+        log.info("Sending XPayment Adapter request: guid={}, amount={}, currency={} -> topic={}",
                 message.getPaymentGuid(), message.getAmount(), message.getCurrency(), topic);
-        template.send(topic, key, message);
+        template.send(topic, key, message)
+                .whenComplete((res, ex) -> {
+                    if (ex != null) {
+                        log.error("Error while sending XPayment Adapter request", ex);
+                    } else {
+                        log.info("XPayment Adapter request sent, partition={}, offset={}",
+                                res.getProducerRecord().partition(),
+                                res.getRecordMetadata().offset()
+                        );
+                    }
+                });
     }
 }

@@ -12,6 +12,7 @@
     <modules>
         <module>simple-http-server</module>
         <module>payment-service-app</module>
+        <module>xpayment-adapter-app</module>
     </modules>
 
     <properties>

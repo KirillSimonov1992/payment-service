@@ -55,7 +55,7 @@ spring:
 app:
   kafka:
     topics:
-      xpayment-adapter:
+      x-payment-adapter:
         request: xpayment-adapter.requests
         response: xpayment-adapter.responses
 
