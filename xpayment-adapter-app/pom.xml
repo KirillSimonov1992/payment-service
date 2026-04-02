@@ -117,6 +117,7 @@
                             </configOptions>
                             <generateApiTests>false</generateApiTests>
                             <generateModelTests>false</generateModelTests>
+                            <verbose>true</verbose>
                         </configuration>
                     </execution>
                 </executions>
