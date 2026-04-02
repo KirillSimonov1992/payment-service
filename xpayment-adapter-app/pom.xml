@@ -107,6 +107,7 @@
                         <configuration>
                             <inputSpec>xpayment-api.openapi.yml</inputSpec>
                             <generatorName>java</generatorName>
+                            <verbose>true</verbose>
                             <library>resttemplate</library>
                             <output>${project.build.directory}/generated-sources/openapi</output>
                             <apiPackage>ru.iprody.xpayment.api.client</apiPackage>
@@ -117,7 +118,6 @@
                             </configOptions>
                             <generateApiTests>false</generateApiTests>
                             <generateModelTests>false</generateModelTests>
-                            <verbose>true</verbose>
                         </configuration>
                     </execution>
                 </executions>
