@@ -24,7 +24,7 @@ jobs:
 
       # Шаг 3: Компиляция проекта
       - name: Compile with Maven
-        run: mvn clean compile -X > full-log.txt 2>&1
+        run: mvn --batch-mode clean compile -X
 
       # Шаг 4: запуск тестов
       - name: Run tests
