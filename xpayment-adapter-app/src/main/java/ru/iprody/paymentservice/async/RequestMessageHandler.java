@@ -1,67 +1,82 @@
 package ru.iprody.paymentservice.async;
 
-import jakarta.annotation.PreDestroy;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientException;
+import ru.iprody.paymentservice.api.XPaymentProviderGateway;
+import ru.iprody.paymentservice.dto.CreateChargeRequestDto;
+import ru.iprody.paymentservice.dto.CreateChargeResponseDto;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.UUID;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
+@AllArgsConstructor
 public class RequestMessageHandler implements MessageHandler<XPaymentAdapterRequestMessage> {
 
     private final AsyncSender<XPaymentAdapterResponseMessage> sender;
     private final AsyncSender<XPaymentAdapterRequestMessage> senderDLT;
-    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-    private static final BigDecimal two = new BigDecimal("2");
+    private final XPaymentProviderGateway xPaymentProviderGateway;
+    private final ExecutorService executor = Executors.newFixedThreadPool(10);
 
-    @Autowired
-    public RequestMessageHandler(
-            AsyncSender<XPaymentAdapterResponseMessage> sender,
-            AsyncSender<XPaymentAdapterRequestMessage> senderDLT
-    ) {
-        this.sender = sender;
-        this.senderDLT = senderDLT;
-    }
+    private static final BigDecimal two = new BigDecimal("2");
 
     @Override
     public void handleMessage(XPaymentAdapterRequestMessage message) {
-        scheduler.schedule(() -> {
-            log.info("Sending response about processing request {}", message.getPaymentGuid());
+        log.info(
+                "Payment request received paymentGuid - {},amount - {}, currency - {}",
+                message.getPaymentGuid(), message.getAmount(), message.getCurrency()
+        );
 
-            if (!validation(message)) {
-                senderDLT.send(message);
-                return;
+        executor.submit(() -> {
+            int retries = 5;
+            CreateChargeResponseDto chargeResponse = null;
+            Exception lastException = null;
+            while (retries > 0) {
+                log.info("Retries left: {} for paymentGuid - {}", retries, message.getPaymentGuid());
+                retries--;
+                CreateChargeRequestDto createChargeRequest = new CreateChargeRequestDto();
+                createChargeRequest.setAmount(message.getAmount());
+                createChargeRequest.setCurrency(message.getCurrency());
+                createChargeRequest.setOrder(message.getPaymentGuid());
+                try {
+                    chargeResponse = xPaymentProviderGateway.createCharge(createChargeRequest);
+                } catch (RestClientException e) {
+                    log.error("Error in time of sending payment request with paymentGuid - {}", message.getPaymentGuid(), e);
+                    lastException = e;
+                }
+
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    log.error("Error creating charge for paymentGuid - {}", message.getPaymentGuid(), e);
+                    lastException = e;
+                    break;
+                }
             }
-
-            BigDecimal amount = message.getAmount();
-            XPaymentAdapterStatus status = XPaymentAdapterStatus.CANCELED;
-            if (amount.remainder(two).compareTo(BigDecimal.ZERO) == 0) {
-                status = XPaymentAdapterStatus.SUCCEEDED;
+            XPaymentAdapterResponseMessage responseMessage = new XPaymentAdapterResponseMessage();
+            if (chargeResponse != null) {
+                responseMessage.setPaymentGuid(chargeResponse.getOrder());
+                responseMessage.setTransactionRefId(chargeResponse.getId());
+                responseMessage.setAmount(chargeResponse.getAmount());
+                responseMessage.setCurrency(chargeResponse.getCurrency());
+                responseMessage.setStatus(XPaymentAdapterStatus.valueOf(chargeResponse.getStatus()));
+                responseMessage.setOccurredAt(Instant.now());
+            } else if (lastException != null) {
+                responseMessage.setPaymentGuid(message.getPaymentGuid());
+                responseMessage.setAmount(message.getAmount());
+                responseMessage.setCurrency(message.getCurrency());
+                responseMessage.setStatus(XPaymentAdapterStatus.CANCELED);
+                responseMessage.setOccurredAt(Instant.now());
+            } else {
+                throw new IllegalStateException("Invalid state in message handler");
             }
-
-            XPaymentAdapterResponseMessage response = new XPaymentAdapterResponseMessage();
-            response.setMessageGuid(message.getMessageId());
-            response.setPaymentGuid(message.getPaymentGuid());
-            response.setAmount(amount);
-            response.setCurrency(message.getCurrency());
-            response.setStatus(status);
-            response.setTransactionRefId(UUID.randomUUID());
-            response.setOccurredAt(Instant.now());
-
-            sender.send(response);
-        }, 30, TimeUnit.SECONDS);
-    }
-
-    @PreDestroy
-    public void shutdown() {
-        scheduler.shutdown();
+            sender.send(responseMessage);
+        });
     }
 
     private boolean validation(XPaymentAdapterRequestMessage message) {
