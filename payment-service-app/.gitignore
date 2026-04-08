@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+/logs
+rabbitmq_delayed_message_exchange-4.2.0.ez
