@@ -5,15 +5,7 @@ target/
 .kotlin
 
 ### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/encodings.xml
-.idea/dataSources.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
-.idea/**/encodings.xml
-.idea/**/misc.xml
-.idea/**/vcs.xml
+.idea/
 *.iws
 *.iml
 *.ipr
