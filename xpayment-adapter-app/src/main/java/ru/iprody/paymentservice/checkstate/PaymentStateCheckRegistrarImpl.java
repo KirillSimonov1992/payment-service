@@ -44,7 +44,7 @@ public class PaymentStateCheckRegistrarImpl implements PaymentStateCheckRegistra
                 routingKey,
                 message,
                 m -> {
-                    m.getMessageProperties().setHeader("x-delayed-ttl", intervalMs);
+                    m.getMessageProperties().setHeader("x-delayed", intervalMs);
                     m.getMessageProperties().setHeader("x-retry-count", 1);
                     return m;
                 }
