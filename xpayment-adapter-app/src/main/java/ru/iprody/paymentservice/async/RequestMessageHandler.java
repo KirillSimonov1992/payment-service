@@ -59,7 +59,7 @@ public class RequestMessageHandler implements MessageHandler<XPaymentAdapterRequ
             responseMessage.setCurrency(message.getCurrency());
             responseMessage.setStatus(XPaymentAdapterStatus.CANCELED);
             responseMessage.setOccurredAt(Instant.now());
-
+            sender.send(responseMessage);
         }
 
     }

@@ -17,7 +17,7 @@ import static ru.iprody.paymentservice.checkstate.RabbitMqDlxConfig.DEAD_LETTER_
 @Configuration
 public class RabbitMqPaymentRetryConfig {
 
-    @Value("${app.rabbitmq.queue-name")
+    @Value("${app.rabbitmq.queue-name}")
     private String queueName;
 
     @Value("${app.rabbitmq.delayed-exchange-name}")
